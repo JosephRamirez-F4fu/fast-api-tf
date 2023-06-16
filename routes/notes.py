@@ -5,7 +5,7 @@ from models.notes import StudentNote
 from bson import ObjectId
 from pymongo.errors import PyMongoError
 
-router_notes = APIRouter(tags=["Router"])
+router_notes = APIRouter(tags=["Notes"])
 notes_collection = db.notes
 @router_notes.post('/api/note', response_model=StudentNote)
 async def post_note(note:StudentNote):
