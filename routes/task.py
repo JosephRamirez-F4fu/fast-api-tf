@@ -1,35 +1,49 @@
-from fastapi import APIRouter, Response, status,HTTPException
+from fastapi import APIRouter,HTTPException
 from config.db import db
-from schemas.task import taskEntity,tasksEntity
-from models.task import Task
+from schemas.task import studentTaskEntity,studentTasksEntity
+from models.task import StudentTask
 from bson import ObjectId
-from starlette.status import HTTP_204_NO_CONTENT,HTTP_205_RESET_CONTENT
+from pymongo.errors import PyMongoError
 
-router_task=APIRouter()
+router_task=APIRouter(tags=["Tasks"])
 
-@router_task.get('/tasks')
-async def find_all_tasks():
-    return tasksEntity(db.task.find())
+@router_task.post('/api/task', response_model=StudentTask)
+async def create_task(task:StudentTask):
+    try:
+        dict_task = task.dict()
+        del dict_task["id"]
+        id = db.tasks.insert_one(dict_task).inserted_id
+        new_task = db.tasks.find_one({"_id":id})
+        new_task = studentTaskEntity(new_task)
+        return StudentTask(**new_task)
+    except PyMongoError as e:
+        raise HTTPException(status_code=500,detail=str(e))
 
-@router_task.get('/tasks/{id}')
-async def find_one_task(id:str):
-    return taskEntity(db.task.find_one({"_id":ObjectId(id)}))
+@router_task.get('/api/task/{id}')
+async def get_task(id:str):
+    try:
+        return studentTaskEntity(db.tasks.find_one({"_id":ObjectId(id)}))
+    except PyMongoError as e:
+        raise HTTPException(status_code=500,detail=str(e))
 
-@router_task.post('/tasks',response_model=Task,status_code=status.HTTP_201_CREATED)
-async def create_task(task:Task):
-    new_task = dict(task)
-    del new_task["id"]
-    id = db.task.insert_one(new_task).inserted_id
-    task = db.task.find_one({"_id":id})
-    task = taskEntity(task)
-    return Task(**task) 
+@router_task.get('/api/tasks/student/{id}')
+async def get_student_tasks(id:str):
+    try:
+        return studentTasksEntity(db.tasks.find({"id_student":(id)}))
+    except PyMongoError as e:
+        raise HTTPException(status_code=500,detail=str(e))
 
-@router_task.put('/tasks/{id}')
-async def update_task(id:str,task:Task):
-    db.task.find_one_and_update({"_id":ObjectId(id)},{"$set":dict(task)})
-    return Response(status_code=HTTP_205_RESET_CONTENT)
-
-@router_task.delete('/tasks/{id}')
-async def delete_tasks():
-    taskEntity(db.task.find_one_and_delete({"_id":ObjectId(id)}))
-    return Response(status_code=HTTP_204_NO_CONTENT)
+@router_task.put('/api/task/{id}', response_model=StudentTask)
+async def put_student_task(id:str, task:StudentTask):
+    try:
+        return studentTaskEntity(db.tasks.find_one_and_update({"_id":ObjectId(id)},{"$set":task.dict()}))
+    except PyMongoError as e:
+        raise HTTPException(status_code=500,detail=str(e))
+    
+@router_task.delete('/api/task/{id}')
+async def put_student_task(id:str):
+    try:
+        db.tasks.find_one_and_delete({"_id":ObjectId(id)})
+        return {"message":"eliminacion exitosa"}
+    except PyMongoError as e:
+        raise HTTPException(status_code=500,detail=str(e))

@@ -1,7 +1,16 @@
-from pydantic import BaseModel
 from typing import Optional
-class Task(BaseModel):
-    id:Optional[str]
+from pydantic import BaseModel
+
+class SubTask(BaseModel):
     name:str
-    description:str
     isDone:bool
+
+class Task(BaseModel):
+    name:str
+    isDone:bool
+    subtasks:list[SubTask]
+
+class StudentTask(BaseModel):
+    id:Optional[str]
+    id_student:str
+    tasks:Task
