@@ -36,12 +36,14 @@ async def get_student_tasks(id:str):
 @router_task.put('/api/task/{id}', response_model=StudentTask)
 async def put_student_task(id:str, task:StudentTask):
     try:
-        return studentTaskEntity(db.tasks.find_one_and_update({"_id":ObjectId(id)},{"$set":task.dict()}))
+        edit_task = task.dict()
+        del edit_task["id"]
+        return studentTaskEntity(db.tasks.find_one_and_update({"_id":ObjectId(id)},{"$set":edit_task}))
     except PyMongoError as e:
         raise HTTPException(status_code=500,detail=str(e))
     
 @router_task.delete('/api/task/{id}')
-async def put_student_task(id:str):
+async def delete_student_task(id:str):
     try:
         db.tasks.find_one_and_delete({"_id":ObjectId(id)})
         return {"message":"eliminacion exitosa"}

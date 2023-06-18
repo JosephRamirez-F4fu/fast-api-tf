@@ -35,9 +35,11 @@ async def get_student_notes(id:str):
         raise HTTPException(status_code=500,detail=str(e))
     
 @router_notes.put('/api/note/{id}',response_model=StudentNote)
-async def get_student_notes(id:str,note:StudentNote):
+async def put_student_notes(id:str,note:StudentNote):
     try:
-        return studentNotesEntity(notes_collection.find_one_and_update({"_id":ObjectId(id)},{"$set":note.dict()}))
+        edit_note=note.dict()
+        del edit_note["id"]
+        return studentNoteEntity(notes_collection.find_one_and_update({"_id":ObjectId(id)},{"$set":edit_note}))
     except PyMongoError as e:
         raise HTTPException(status_code=500,detail=str(e))
 
