@@ -22,6 +22,8 @@ async def post_note(note:StudentNote):
 @router_notes.get('/api/note/{id}')
 async def get_note(id:str):
     try:
+        if not notes_collection.find({"_id":ObjectId(id)}):
+            return {"message":"no se encontro el elemento","resultado":False}
         return studentNoteEntity(notes_collection.find_one({"_id":ObjectId(id)}))
     except PyMongoError as e:
         raise HTTPException(status_code=500,detail=str(e))
@@ -39,6 +41,9 @@ async def put_student_notes(id:str,note:StudentNote):
     try:
         edit_note=note.dict()
         del edit_note["id"]
+        if not notes_collection.find({"_id":ObjectId(id)}):
+            return {"message":"no se encontro el elemento","resultado":False}
+
         return studentNoteEntity(notes_collection.find_one_and_update({"_id":ObjectId(id)},{"$set":edit_note}))
     except PyMongoError as e:
         raise HTTPException(status_code=500,detail=str(e))

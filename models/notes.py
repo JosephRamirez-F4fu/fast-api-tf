@@ -8,4 +8,4 @@ class Note(BaseModel):
 class StudentNote(BaseModel):
     id:Optional[str]
     id_student:str
-    notes:list[Note]
+    note:Note

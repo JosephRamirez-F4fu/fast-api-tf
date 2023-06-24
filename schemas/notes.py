@@ -4,11 +4,11 @@ def noteEntity(item)->dict:
         "title":item["title"]
     }
 def studentNoteEntity(item) -> dict:
-    notes = [noteEntity(note) for note in item["notes"]]
+      
     return {
         "id":str(item["_id"]),
         "id_student": item["id_student"],
-        "notes": notes
+        "note": noteEntity(item["note"])
     }
 
 def studentNotesEntity(entity) -> list:
